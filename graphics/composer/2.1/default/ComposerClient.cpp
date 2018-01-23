@@ -301,8 +301,13 @@ Return<void> ComposerClient::createLayer(Display display,
         std::lock_guard<std::mutex> lock(mDisplayDataMutex);
 
         auto dpy = mDisplayData.find(display);
-        auto ly = dpy->second.Layers.emplace(layer, LayerBuffers()).first;
-        ly->second.Buffers.resize(bufferSlotCount);
+        if (dpy != mDisplayData.end()) {
+            auto ly = dpy->second.Layers.emplace(layer, LayerBuffers()).first;
+            ly->second.Buffers.resize(bufferSlotCount);
+        } else {
+            layer = 0;
+            err = Error::BAD_DISPLAY;
+        }
     }
 
     hidl_cb(err, layer);
@@ -316,6 +321,9 @@ Return<Error> ComposerClient::destroyLayer(Display display, Layer layer)
         std::lock_guard<std::mutex> lock(mDisplayDataMutex);
 
         auto dpy = mDisplayData.find(display);
+        if (dpy == mDisplayData.end()) {
+           return Error::BAD_DISPLAY;
+        }
         dpy->second.Layers.erase(layer);
     }
 

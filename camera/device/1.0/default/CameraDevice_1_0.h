@@ -149,6 +149,7 @@ private:
         void cleanUpCirculatingBuffers();
 
         Mutex mLock;
+        Mutex mPreviewCallbackLock;
         sp<ICameraDevicePreviewCallback> mPreviewCallback = nullptr;
         std::unordered_map<uint64_t, buffer_handle_t> mCirculatingBuffers;
         std::unordered_map<buffer_handle_t*, uint64_t> mBufferIdMap;

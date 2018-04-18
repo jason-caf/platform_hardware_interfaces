@@ -147,6 +147,7 @@ void CameraDevice::CameraPreviewWindow::cleanUpCirculatingBuffers() {
 int CameraDevice::sDequeueBuffer(struct preview_stream_ops* w,
                                    buffer_handle_t** buffer, int *stride) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -188,6 +189,7 @@ int CameraDevice::sLockBuffer(struct preview_stream_ops*, buffer_handle_t*) {
 
 int CameraDevice::sEnqueueBuffer(struct preview_stream_ops* w, buffer_handle_t* buffer) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -198,6 +200,7 @@ int CameraDevice::sEnqueueBuffer(struct preview_stream_ops* w, buffer_handle_t* 
 
 int CameraDevice::sCancelBuffer(struct preview_stream_ops* w, buffer_handle_t* buffer) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -214,6 +217,7 @@ int CameraDevice::sSetBufferCount(struct preview_stream_ops* w, int count) {
     }
 
     object->cleanUpCirculatingBuffers();
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     return getStatusT(object->mPreviewCallback->setBufferCount(count));
 }
 
@@ -226,6 +230,7 @@ int CameraDevice::sSetBuffersGeometry(struct preview_stream_ops* w,
     }
 
     object->cleanUpCirculatingBuffers();
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     return getStatusT(
             object->mPreviewCallback->setBuffersGeometry(width, height, (PixelFormat) format));
 }
@@ -233,6 +238,7 @@ int CameraDevice::sSetBuffersGeometry(struct preview_stream_ops* w,
 int CameraDevice::sSetCrop(struct preview_stream_ops *w,
                              int left, int top, int right, int bottom) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -243,6 +249,7 @@ int CameraDevice::sSetCrop(struct preview_stream_ops *w,
 
 int CameraDevice::sSetTimestamp(struct preview_stream_ops *w, int64_t timestamp) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -259,11 +266,13 @@ int CameraDevice::sSetUsage(struct preview_stream_ops* w, int usage) {
     }
 
     object->cleanUpCirculatingBuffers();
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     return getStatusT(object->mPreviewCallback->setUsage((BufferUsage)usage));
 }
 
 int CameraDevice::sSetSwapInterval(struct preview_stream_ops *w, int interval) {
     CameraPreviewWindow* object = static_cast<CameraPreviewWindow*>(w);
+    Mutex::Autolock _l(object->mPreviewCallbackLock);
     if (object->mPreviewCallback == nullptr) {
         ALOGE("%s: camera HAL calling preview ops while there is no preview window!", __FUNCTION__);
         return INVALID_OPERATION;
@@ -726,12 +735,15 @@ Return<Status> CameraDevice::setPreviewWindow(const sp<ICameraDevicePreviewCallb
         ALOGE("%s called while camera is not opened", __FUNCTION__);
         return Status::OPERATION_NOT_SUPPORTED;
     }
-
-    mHalPreviewWindow.mPreviewCallback = window;
+    {
+       Mutex::Autolock _l(mHalPreviewWindow.mPreviewCallbackLock);
+       mHalPreviewWindow.mPreviewCallback = window;
+    }
     if (mDevice->ops->set_preview_window) {
         return getHidlStatus(mDevice->ops->set_preview_window(mDevice,
                 (window == nullptr) ? nullptr : &mHalPreviewWindow));
     }
+
     return Status::INTERNAL_ERROR; // HAL should provide set_preview_window
 }
 

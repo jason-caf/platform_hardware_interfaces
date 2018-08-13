@@ -1243,15 +1243,6 @@ wifi_error WifiLegacyHal::setCountryCode(std::array<int8_t, 2> code) {
                                                   code_str.c_str());
 }
 
-#ifdef FEATURE_WLAN_DNBS
-wifi_error WifiLegacyHal::setRestrictedOffChannel(const std::string& ifname,
-                                                  bool enable) {
-  int8_t rsc = enable ? 1 : 0;
-  return global_func_table_.wifi_set_restricted_offchannel(
-      wlan_interface_handle_, ifname.data(), rsc);
-}
-#endif
-
 wifi_error WifiLegacyHal::retrieveWlanInterfaceHandle() {
   const std::string& ifname_to_find = getStaIfaceName();
   wifi_interface_handle* iface_handles = nullptr;

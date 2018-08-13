@@ -49,9 +49,4 @@ LOCAL_SHARED_LIBRARIES := \
     libwifi-hal \
     libwifi-system-iface
 LOCAL_INIT_RC := android.hardware.wifi@1.0-service.rc
-
-#ifeq ($(FEATURE_WLAN_DNBS), true)
-LOCAL_CFLAGS += -DFEATURE_WLAN_DNBS
-LOCAL_SHARED_LIBRARIES += vendor.qti.hardware.wifi@1.1_vendor
-#endif
 include $(BUILD_EXECUTABLE)

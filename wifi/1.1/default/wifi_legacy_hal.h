@@ -276,9 +276,6 @@ class WifiLegacyHal {
   wifi_error nanDataEnd(transaction_id id, uint32_t ndpInstanceId);
   // AP functions.
   wifi_error setCountryCode(std::array<int8_t, 2> code);
-#ifdef FEATURE_WLAN_DNBS
-  wifi_error setRestrictedOffChannel(const std::string& ifname, bool enable);
-#endif
 
  private:
   // Retrieve the interface handle to be used for the "wlan" interface.

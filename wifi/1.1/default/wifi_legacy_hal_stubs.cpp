@@ -134,9 +134,6 @@ bool initHalFuncTableWithStubs(wifi_hal_fn* hal_fn) {
   populateStubFor(&hal_fn->wifi_configure_roaming);
   populateStubFor(&hal_fn->wifi_select_tx_power_scenario);
   populateStubFor(&hal_fn->wifi_reset_tx_power_scenario);
-#ifdef FEATURE_WLAN_DNBS
-  populateStubFor(&hal_fn->wifi_set_restricted_offchannel);
-#endif
   return true;
 }
 }  // namespace legacy_hal

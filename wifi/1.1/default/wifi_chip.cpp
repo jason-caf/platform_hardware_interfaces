@@ -360,19 +360,6 @@ Return<void> WifiChip::resetTxPowerScenario(
                          hidl_status_cb);
 }
 
-#ifdef FEATURE_WLAN_DNBS
-Return<void> WifiChip::setRestrictedOffChannel(
-    const hidl_string& ifname, bool enable,
-    setRestrictedOffChannel_cb hidl_status_cb) {
-  return validateAndCall(this,
-                         WifiStatusCode::ERROR_WIFI_CHIP_INVALID,
-                         &WifiChip::setRestrictedOffChannelInternal,
-                         hidl_status_cb,
-                         ifname,
-                         enable);
-}
-#endif
-
 void WifiChip::invalidateAndRemoveAllIfaces() {
   invalidateAndClear(ap_iface_);
   invalidateAndClear(nan_iface_);
@@ -869,15 +856,6 @@ WifiStatus WifiChip::resetTxPowerScenarioInternal() {
   auto legacy_status = legacy_hal_.lock()->resetTxPowerScenario();
   return createWifiStatusFromLegacyError(legacy_status);
 }
-
-#ifdef FEATURE_WLAN_DNBS
-WifiStatus WifiChip::setRestrictedOffChannelInternal(
-    const hidl_string& ifname, bool enable) {
-  auto legacy_status = legacy_hal_.lock()->setRestrictedOffChannel(
-      ifname, enable);
-  return createWifiStatusFromLegacyError(legacy_status);
-}
-#endif
 
 WifiStatus WifiChip::handleChipConfiguration(ChipModeId mode_id) {
   // If the chip is already configured in a different mode, stop
